@@ -1,20 +1,13 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 
 from app.graph.workflow import graph
+from app.schemas import CallRequest, CallResponse
 
 
 app = FastAPI(
     title="Broker CALL-E Agent"
 )
-
-
-class CallRequest(BaseModel):
-
-    phone_number: str
-
-    objective: str | None = None
 
 
 @app.get("/")
@@ -26,7 +19,7 @@ def home():
     }
 
 
-@app.post("/call")
+@app.post("/call", response_model=CallResponse)
 def make_call(
     request: CallRequest
 ):
@@ -53,6 +46,7 @@ def make_call(
         return JSONResponse(
             status_code=400,
             content={
+                "call_id": None,
                 "success": False,
                 "error": str(exc)
             }
@@ -63,12 +57,18 @@ def make_call(
         return JSONResponse(
             status_code=500,
             content={
+                "call_id": None,
                 "success": False,
                 "error": f"Unexpected error: {exc}"
             }
         )
 
     return {
+
+        "call_id":
+            result.get(
+                "call_id"
+            ),
 
         "success":
             result.get(

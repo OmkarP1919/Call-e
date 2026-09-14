@@ -50,6 +50,7 @@ def main():
         objective="Understand the customer's requirements for buying or renting a residential property.",
     )
 
+    print(f"call_id: {result.get('call_id')}")
     print(f"status: {result.get('status')}")
     print(f"task_completed: {result.get('task_completed')}")
     print(f"completion_confidence: {result.get('completion_confidence')}")
