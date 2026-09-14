@@ -1,5 +1,7 @@
+import logging
 import os
 import re
+import time
 from typing import Any, Dict, Optional
 
 from dotenv import load_dotenv
@@ -8,6 +10,8 @@ from calle import CalleClient
 from calle.errors import CalleAPIError, CalleConnectionError, CalleTimeoutError
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 API_KEY = os.environ.get("CALLE_API_KEY")
 BASE_URL = os.environ.get("CALLE_BASE_URL", "https://api.heycall-e.com")
@@ -58,18 +62,27 @@ def make_broker_call(
 
     client = get_client()
 
-    workflow_run_id = f"broker_call_{phone_number}"
+    timestamp = int(time.time())
+    workflow_run_id = f"broker_call_{phone_number}_{timestamp}"
 
-    call = client.calls.create_and_wait(
+    call = client.calls.create(
         task=_build_task(phone_number, objective),
         result_schema=_build_result_schema(),
         metadata={"workflow_run_id": workflow_run_id},
         idempotency_key=workflow_run_id,
+    )
+
+    call_id = call.get("id")
+    logger.info("CALL-E call created with ID: %s", call_id)
+
+    call = client.calls.wait_for_result(
+        call_id,
         timeout_seconds=timeout_seconds or 300,
         interval_seconds=3,
     )
 
     return {
+        "call_id": call_id,
         "status": call.get("status"),
         "task_completed": call.get("task_completed"),
         "completion_confidence": call.get("completion_confidence"),
