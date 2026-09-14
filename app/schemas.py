@@ -8,6 +8,7 @@ class CallRequest(BaseModel):
 
 
 class CallResponse(BaseModel):
+    call_id: Optional[str] = None
     success: bool
     call_status: Optional[str] = None
     gathered_information: Optional[dict] = None

@@ -16,6 +16,7 @@ Run:
 """
 
 import os
+import uuid
 
 from dotenv import load_dotenv
 from calle import CalleClient
@@ -63,7 +64,7 @@ def main():
                 }
             }
         },
-        idempotency_key=f"hearing_check_{PHONE}",
+        idempotency_key=f"hearing_check_{PHONE}_{uuid.uuid4().hex[:8]}",
         timeout_seconds=120,
         interval_seconds=2,
     )
