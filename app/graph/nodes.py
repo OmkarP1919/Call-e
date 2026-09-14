@@ -81,6 +81,7 @@ def call_e_node(state):
         }
 
     return {
+        "call_id": result.get("call_id"),
         "call_status": result.get("status"),
         "call_result": result
     }

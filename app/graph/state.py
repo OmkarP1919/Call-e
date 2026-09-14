@@ -6,6 +6,8 @@ class BrokerCallState(TypedDict, total=False):
     phone_number: str
     call_objective: str
 
+    call_id: Optional[str]
+
     call_status: str
 
     call_result: Dict[str, Any]
