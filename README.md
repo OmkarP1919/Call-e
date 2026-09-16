@@ -1,0 +1,221 @@
+# Broker CALL-E Agent
+
+An AI-powered real-estate phone agent that calls customers, conducts a natural conversation to gather property requirements, and returns validated structured data for broker follow-up.
+
+Built with **FastAPI**, **LangGraph**, and the official **CALL-E Python SDK** (`calle-ai`).
+
+---
+
+## What It Does
+
+1. **Accepts Call Tasks**: Dispatched via `POST /call` with a target phone number and objective.
+2. **Orchestrates State**: LangGraph workflow manages validation, prompt construction, dialing, verification, and persistence.
+3. **Places Natural Phone Calls**: CALL-E voice engine dials the customer and conducts an adaptive, natural voice conversation.
+4. **Extracts Structured Requirements**: Live customer speech is transcribed and mapped to a strict JSON schema with confidence scoring and transcript evidence citations.
+5. **Persists Validated Leads**: Completed leads are automatically stored in `data/calls.json`. If a call fails or is incomplete, failures are handled safely without storing corrupted data.
+
+---
+
+## Architecture & Flow
+
+```
+Client (POST /call)
+        │
+        ▼
+   FastAPI App
+        │
+        ▼
+   LangGraph Workflow
+        │
+   [1. validate_input] ────────────► (Validation Error 400)
+        │
+   [2. prepare_call]
+        │
+   [3. call_e_node] ◄──────────────► CALL-E Cloud Telephony & Voice AI
+        │                                 │
+        ▼                                 ▼
+   [4. check_result]               Customer Phone Call (Live Conversation)
+        │
+        ├─────────────────────────────┐
+        ▼                             ▼
+   (Success: True)              (Success: False)
+        │                             │
+   [5. store_result_node]        [6. handle_failure_node]
+        │                             │
+        ▼                             ▼
+   Save to data/calls.json       Return Error Diagnostic
+        │                             │
+        └──────────────┬──────────────┘
+                       ▼
+             JSON Response (200)
+```
+
+---
+
+## Core Extracted Fields
+
+| Field | Type | Description | Example |
+| :--- | :--- | :--- | :--- |
+| `intent` | string | Real estate intent (`buy`, `sell`, `rent`, `unknown`) | `"buy"` |
+| `location` | string | Target area or city | `"Pune, Hinjewadi"` |
+| `property_type` | string | Type of property sought | `"2BHK Flat"` |
+| `budget` | string | Budget range stated by customer | `"80 lakh"` |
+| `bedrooms` | string | Number of bedrooms needed | `"2"` |
+| `timeline` | string | Purchase or moving timeline | `"within 3 months"` |
+| `additional_requirements` | string | Specific amenities or preferences | `"Parking required"` |
+| `evidence_summary` | string | Direct quote or summary supporting the extraction | `"Customer confirmed looking to buy a 2BHK flat in Hinjewadi."` |
+
+---
+
+## Setup
+
+### 1. Prerequisites
+- Python 3.10+
+- A CALL-E developer account and API key from [heycall-e.com](https://heycall-e.com)
+
+### 2. Installation
+Clone the repository and install dependencies:
+```bash
+git clone https://github.com/OmkarP1919/Call-e.git
+cd Call-e
+pip install -r requirements.txt
+```
+
+### 3. Environment Configuration
+Copy the example environment file:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your credentials:
+```ini
+# CALL-E API Configuration
+CALLE_API_KEY=your_calle_api_key_here
+CALLE_BASE_URL=https://api.heycall-e.com
+
+# Test phone number for manual verification (must be E.164 format)
+CALLE_TEST_PHONE=+919XXXXXXXXX
+```
+
+> **Security Note:** Never commit your `.env` file to version control. It is ignored by `.gitignore`.
+
+---
+
+## How to Run
+
+### Start the FastAPI Server
+```bash
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
+
+---
+
+## API Usage
+
+### Initiate a Broker Call
+
+**Endpoint:** `POST /call`  
+**Content-Type:** `application/json`
+
+#### Request
+```json
+{
+  "phone_number": "+919XXXXXXXXX",
+  "objective": "Understand the customer's requirements for buying a residential property."
+}
+```
+
+#### Successful Response (`200 OK`)
+```json
+{
+  "call_id": "call_abc123xyz456",
+  "success": true,
+  "call_status": "completed",
+  "gathered_information": {
+    "intent": "buy",
+    "location": "Pune, Hinjewadi",
+    "property_type": "2BHK Flat",
+    "budget": "80 lakh",
+    "bedrooms": "2",
+    "timeline": "within 3 months",
+    "additional_requirements": "Parking required",
+    "evidence_summary": "Customer confirmed looking to buy a 2BHK flat in Hinjewadi within 3 months under 80 lakh budget."
+  },
+  "error": null
+}
+```
+
+#### Failed Response (`200 OK` or `400 Bad Request`)
+If the recipient did not answer, timed out, or provided an invalid phone number:
+```json
+{
+  "call_id": "call_abc123xyz456",
+  "success": false,
+  "call_status": "failed",
+  "gathered_information": null,
+  "error": "Call did not succeed: status=failed, task_completed=False, structured_result=missing"
+}
+```
+
+---
+
+## Data Storage
+
+Successful calls are appended to `data/calls.json`:
+
+```json
+[
+  {
+    "timestamp": "2026-09-14T12:35:14.709670",
+    "phone_number": "+9198XXXXXXXX",
+    "objective": "Understand property requirements",
+    "call_status": "completed",
+    "completion_confidence": {
+      "score": 0.86,
+      "label": "high"
+    },
+    "gathered_information": {
+      "intent": "buy",
+      "location": "Pune, Hinjewadi",
+      "property_type": "Flat",
+      "budget": "",
+      "bedrooms": "2 BHK",
+      "timeline": "",
+      "additional_requirements": "",
+      "evidence_summary": "Customer stated looking to buy a 2 BHK Flat in Pune, Hinjewadi."
+    }
+  }
+]
+```
+
+---
+
+## Automated Testing
+
+Run the automated test suite (uses mocks, makes **no live calls**, requires no credits):
+```bash
+python -m unittest tests/test_observability.py
+```
+
+Verify Python syntax compilation:
+```bash
+python -m py_compile app/main.py app/schemas.py app/services/calle.py app/services/storage.py app/graph/nodes.py app/graph/state.py app/graph/workflow.py
+```
+
+---
+
+## Safety, Privacy & Real-Call Side Effects
+
+> [!WARNING]
+> **Live Telephony Side Effects:** Sending a request to `POST /call` initiates an **actual outbound telephone call** to the designated phone number using CALL-E telephony credits.
+
+- **Consent Required:** Ensure you have prior consent from the recipient before initiating a call.
+- **AI Disclosure:** The conversational agent introduces itself as an automated AI assistant calling on behalf of a real-estate broker.
+- **Fail-Closed Processing:** The LangGraph workflow treats any incomplete or ambiguous call as `succeeded = False` and prevents saving unconfirmed data.
+- **PII Protection:** Never hardcode phone numbers or API keys in source files. Placeholders are used in all documentation and test fixtures.
+
+---
+
+## License
+MIT License.

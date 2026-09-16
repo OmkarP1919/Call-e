@@ -1,0 +1,82 @@
+[
+    {
+        "timestamp": "2026-08-08T17:04:40.445672",
+        "phone_number": "+919876543210",
+        "objective": "Understand property requirements",
+        "call_status": "completed",
+        "completion_confidence": 0.94,
+        "gathered_information": {
+            "name": "Rahul",
+            "requirement_type": "buy",
+            "property_type": "2BHK",
+            "location": "Hinjewadi",
+            "budget": "80 lakh",
+            "bedrooms": "2",
+            "preferred_area": "1000-1200 sq ft",
+            "possession_requirement": "within 3 months",
+            "additional_requirements": "Parking required",
+            "interested": true,
+            "customer_confirmed": true
+        }
+    },
+    {
+        "timestamp": "2026-08-08T17:05:57.315535",
+        "phone_number": "+919876543210",
+        "objective": "Understand property requirements",
+        "call_status": "completed",
+        "completion_confidence": 0.94,
+        "gathered_information": {
+            "name": "Rahul",
+            "requirement_type": "buy",
+            "property_type": "2BHK",
+            "location": "Hinjewadi",
+            "budget": "80 lakh",
+            "bedrooms": "2",
+            "preferred_area": "1000-1200 sq ft",
+            "possession_requirement": "within 3 months",
+            "additional_requirements": "Parking required",
+            "interested": true,
+            "customer_confirmed": true
+        }
+    },
+    {
+        "timestamp": "2026-08-21T23:14:22.389857",
+        "phone_number": "+9198XXXXXXXX",
+        "objective": "start proper conversation like talking to an new person who do not know anything",
+        "call_status": "completed",
+        "completion_confidence": {
+            "score": 0.95,
+            "label": "high"
+        },
+        "gathered_information": {
+            "intent": "buy",
+            "location": "Baramati, Maharashtra",
+            "property_type": "apartment",
+            "budget": "Around 20,00,000",
+            "bedrooms": "2 BHK",
+            "timeline": "Next 6 months",
+            "additional_requirements": "Parking, a good social area, basic necessities nearby, and a school and mall nearby.",
+            "evidence_summary": "Customer said they want to buy a property in Baramati, Maharashtra, specifically an apartment with around 20 lakh budget, 2 BHK, in the next 6 months, with parking and nearby amenities."
+        }
+    },
+    {
+        "timestamp": "2026-09-14T12:35:14.709670",
+        "phone_number": "+9198XXXXXXXX",
+        "objective": "Understand property requirements",
+        "call_status": "completed",
+        "completion_confidence": {
+            "score": 0.86,
+            "label": "high"
+        },
+        "gathered_information": {
+            "intent": "buy",
+            "location": "Pune, Hinjewadi",
+            "property_type": "Flat",
+            "budget": "",
+            "bedrooms": "2 BHK",
+            "timeline": "",
+            "additional_requirements": "",
+            "evidence_summary": "Customer said \"I want to buy,\" gave the location as \"Pune\" and \"Hinjewadi,\" mentioned \"2 BHK,\" later said \"Flat,\" and asked to decline/end the call before budget or timeline were clarified."
+        }
+    }
+]
